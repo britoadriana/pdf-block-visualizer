@@ -1,0 +1,42 @@
+!pip install -q pymupdf pillow matplotlib
+
+import fitz  # PyMuPDF
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+from PIL import Image
+import io
+
+def extrair_blocos(pdf_path, page_num=0, dpi=150):
+    doc = fitz.open(pdf_path)
+    page = doc[page_num]
+    # Extrai blocos: cada parágrafo como (x0, y0, x1, y1, texto, bloco_no, bloco_tipo)
+    blocks = page.get_text("blocks", sort=True)
+    pix = page.get_pixmap(dpi=dpi)
+    img = Image.open(io.BytesIO(pix.tobytes("png")))
+    doc.close()
+    return blocks, img
+
+def mostrar_blocos_e_texto(pdf_path, page_num=0, dpi=150):
+    blocks, img = extrair_blocos(pdf_path, page_num, dpi)
+
+    # Exibe o texto de cada parágrafo
+    print("=== Parágrafos encontrados ===")
+    for i, b in enumerate(blocks):
+        x0, y0, x1, y1, texto, blk_no, blk_type = b
+        print(f"\nParágrafo {i+1} (bbox: {x0:.1f}, {y0:.1f}, {x1:.1f}, {y1:.1f}):")
+        print(texto)
+
+    # Exibe a imagem com caixas ao redor dos blocos
+    fig, ax = plt.subplots(1, figsize=(8, 11))
+    ax.imshow(img)
+    for b in blocks:
+        x0, y0, x1, y1, texto, blk_no, blk_type = b
+        rect = patches.Rectangle((x0, y0), x1 - x0, y1 - y0,
+                                 linewidth=2, edgecolor='red', facecolor='none')
+        ax.add_patch(rect)
+    plt.axis('off')
+    plt.show()
+
+# Exemplo de uso:
+pdf_path = r'/content/drive/MyDrive/Variados/Llava.pdf'
+mostrar_blocos_e_texto(pdf_path, page_num=0, dpi=72)
