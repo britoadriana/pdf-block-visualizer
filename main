@@ -9,7 +9,7 @@ import io
 def extrair_blocos(pdf_path, page_num=0, dpi=150):
     doc = fitz.open(pdf_path)
     page = doc[page_num]
-    # Extrai blocos: cada parágrafo como (x0, y0, x1, y1, texto, bloco_no, bloco_tipo)
+    # Extrai blocos de texto: cada parágrafo como (x0, y0, x1, y1, texto, bloco_no, bloco_tipo)
     blocks = page.get_text("blocks", sort=True)
     pix = page.get_pixmap(dpi=dpi)
     img = Image.open(io.BytesIO(pix.tobytes("png")))
